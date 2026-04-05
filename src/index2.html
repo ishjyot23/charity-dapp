@@ -1,0 +1,2745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CharityChain — Blockchain Donation Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300;1,9..144,500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f2ec;
+  --bg2:#ffffff;
+  --bg3:#f0ede6;
+  --bg4:#e8e4db;
+  --ink:#1a1a14;
+  --ink2:#4a4a3a;
+  --ink3:#8a8a78;
+  --ink4:#b0ad9e;
+  --border:#dedad0;
+  --border2:#ccc9be;
+  --teal:#0d7a6a;
+  --teal2:#0f9b87;
+  --teal3:#12c4a8;
+  --teal-bg:#edf7f5;
+  --teal-bg2:#d4f0eb;
+  --amber:#c47a00;
+  --amber2:#e8920a;
+  --amber-bg:#fef8ec;
+  --amber-bg2:#fdecc8;
+  --red:#c0392b;
+  --red-bg:#fdf0ee;
+  --green:#1a6b3a;
+  --green-bg:#eef7f2;
+  --mono:'DM Mono',monospace;
+  --serif:'Fraunces',serif;
+  --sans:'DM Sans',sans-serif;
+  --r:10px;--r2:16px;--r3:24px;
+  --shadow:0 1px 3px rgba(26,26,20,.06),0 4px 12px rgba(26,26,20,.04);
+  --shadow2:0 2px 8px rgba(26,26,20,.08),0 12px 32px rgba(26,26,20,.06);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh}
+
+/* subtle texture */
+body::before{content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23f5f2ec'/%3E%3Crect x='0' y='0' width='1' height='1' fill='%23ede9e0' opacity='.4'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:.6}
+
+.z1{position:relative;z-index:1}
+
+/* ── HEADER ── */
+header{
+  background:rgba(245,242,236,.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;
+}
+.hdr{max-width:1160px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:36px;height:36px;background:var(--teal);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.logo-text{font-family:var(--serif);font-size:1.2rem;font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.logo-text em{color:var(--teal);font-style:normal}
+
+.hdr-pills{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.net-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--teal-bg);border:1px solid var(--teal-bg2);border-radius:100px;font-size:11px;color:var(--teal);font-family:var(--mono)}
+.net-dot{width:6px;height:6px;border-radius:50%;background:var(--teal2);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+
+.wallet-btn{display:flex;align-items:center;gap:8px;padding:8px 18px;background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--r);font-family:var(--mono);font-size:12px;color:var(--ink2);cursor:pointer;transition:.2s;box-shadow:var(--shadow)}
+.wallet-btn:hover{border-color:var(--teal2);color:var(--teal);background:#fff}
+.wallet-btn.on{border-color:var(--teal2);color:var(--teal);background:var(--teal-bg)}
+.wdot{width:7px;height:7px;border-radius:50%;background:var(--ink4);flex-shrink:0;transition:.3s}
+.wallet-btn.on .wdot{background:var(--teal2);box-shadow:0 0 6px var(--teal3)}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px 80px}
+
+/* ── HERO ── */
+.hero{padding:56px 0 48px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end;border-bottom:1px solid var(--border);margin-bottom:32px}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--teal);letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);margin-bottom:16px}
+.hero-eyebrow::before{content:'';width:24px;height:1px;background:var(--teal)}
+h1{font-family:var(--serif);font-size:clamp(2.2rem,4vw,3.4rem);font-weight:500;line-height:1.1;letter-spacing:-.03em;color:var(--ink);margin-bottom:14px}
+h1 em{color:var(--teal);font-style:italic}
+.hero-desc{color:var(--ink3);font-size:14px;max-width:500px;line-height:1.8;font-family:var(--mono)}
+.hero-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.hero-stat-big{text-align:right}
+.hsb-v{font-family:var(--serif);font-size:2.8rem;font-weight:700;color:var(--teal);line-height:1;letter-spacing:-.03em}
+.hsb-l{font-size:11px;color:var(--ink3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+.tech-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px}
+.tag{padding:4px 11px;border:1px solid var(--border2);border-radius:100px;font-size:11px;color:var(--ink3);font-family:var(--mono);background:var(--bg2)}
+.tag.hi{border-color:var(--teal-bg2);color:var(--teal);background:var(--teal-bg)}
+
+/* ── STATS ROW ── */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px;box-shadow:var(--shadow)}
+.stat-l{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono);margin-bottom:6px}
+.stat-v{font-family:var(--serif);font-size:1.7rem;font-weight:700;line-height:1;color:var(--ink)}
+.stat-v.tl{color:var(--teal)}
+.stat-v.am{color:var(--amber)}
+.stat-sub{font-size:10px;color:var(--ink4);font-family:var(--mono);margin-top:4px}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:28px}
+.tb{padding:10px 20px;border:none;background:transparent;color:var(--ink3);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:.18s;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tb:hover{color:var(--ink)}
+.tb.on{color:var(--teal);border-bottom-color:var(--teal);font-weight:600}
+.panel{display:none}.panel.on{display:block;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── CARD ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--shadow);overflow:hidden}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--border);background:var(--bg3)}
+.card-title{font-family:var(--serif);font-size:1rem;font-weight:500;color:var(--ink);letter-spacing:-.01em}
+.card-sub{font-size:11px;color:var(--ink3);font-family:var(--mono)}
+.card-body{padding:22px}
+
+/* ── CAUSE CARDS ── */
+.causes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+
+.cause-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);
+  overflow:hidden;box-shadow:var(--shadow);transition:all .22s;cursor:pointer
+}
+.cause-card:hover{border-color:var(--teal2);box-shadow:var(--shadow2);transform:translateY(-2px)}
+.cause-card.sel{border-color:var(--teal2);box-shadow:0 0 0 3px var(--teal-bg2)}
+
+.cause-top{padding:22px 22px 16px;border-bottom:1px solid var(--border)}
+.cause-emoji{font-size:2rem;margin-bottom:10px;display:block}
+.cause-name{font-family:var(--serif);font-size:1.1rem;font-weight:500;color:var(--ink);margin-bottom:4px;letter-spacing:-.01em}
+.cause-org{font-size:11px;color:var(--teal);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.cause-desc{font-size:12px;color:var(--ink3);line-height:1.7}
+
+.cause-bottom{padding:16px 22px}
+.cause-progress-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.cause-raised{font-family:var(--serif);font-size:1.2rem;font-weight:700;color:var(--teal)}
+.cause-goal{font-size:11px;color:var(--ink3);font-family:var(--mono)}
+.prog-track{height:6px;background:var(--bg3);border-radius:100px;overflow:hidden;margin-bottom:12px}
+.prog-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal),var(--teal3));transition:width .8s cubic-bezier(.4,0,.2,1)}
+.cause-meta{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-family:var(--mono);color:var(--ink3)}
+.cause-donors{color:var(--ink2)}
+.status-pill{padding:2px 9px;border-radius:100px;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+.sp-active{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-bg2)}
+.sp-closed{background:var(--bg3);color:var(--ink4);border:1px solid var(--border)}
+.sp-funded{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bg2)}
+
+/* donate btn */
+.donate-row{margin-top:12px;display:flex;gap:8px}
+.donate-btn{flex:1;padding:9px;border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:500;cursor:pointer;transition:.18s;border:1.5px solid;display:flex;align-items:center;justify-content:center;gap:7px}
+.db-main{background:var(--teal);border-color:var(--teal);color:#fff}
+.db-main:hover{background:var(--teal2);border-color:var(--teal2)}
+.db-ghost{background:transparent;border-color:var(--border2);color:var(--ink3)}
+.db-ghost:hover{border-color:var(--teal2);color:var(--teal)}
+.db-disabled{background:var(--bg3);border-color:var(--border);color:var(--ink4);cursor:default}
+
+/* ── DONATE MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(26,26,20,.5);backdrop-filter:blur(6px);z-index:999;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);width:440px;max-width:95vw;box-shadow:var(--shadow2);animation:popIn .25s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+
+.modal-hdr{padding:22px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-hdr-l{display:flex;align-items:center;gap:12px}
+.cause-icon-sm{width:38px;height:38px;border-radius:10px;background:var(--teal-bg);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.modal-title{font-family:var(--serif);font-size:1.05rem;font-weight:500;color:var(--ink)}
+.modal-sub{font-size:11px;color:var(--ink3);font-family:var(--mono);margin-top:1px}
+.close-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--ink3);font-size:16px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.close-btn:hover{background:var(--bg3)}
+
+.modal-body{padding:22px 24px}
+
+/* amount picker */
+.amount-label{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono);margin-bottom:10px}
+.amount-presets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.preset{padding:9px;border:1.5px solid var(--border2);border-radius:8px;background:var(--bg);font-family:var(--mono);font-size:13px;font-weight:500;cursor:pointer;text-align:center;transition:.18s;color:var(--ink2)}
+.preset:hover{border-color:var(--teal2);color:var(--teal);background:var(--teal-bg)}
+.preset.sel{border-color:var(--teal);background:var(--teal-bg);color:var(--teal)}
+.custom-wrap{display:flex;align-items:center;gap:0;border:1.5px solid var(--border2);border-radius:8px;overflow:hidden;background:var(--bg2);margin-bottom:18px}
+.custom-wrap:focus-within{border-color:var(--teal2)}
+.custom-prefix{padding:9px 12px;font-family:var(--mono);font-size:13px;color:var(--ink3);background:var(--bg3);border-right:1px solid var(--border)}
+.custom-inp{flex:1;border:none;padding:9px 12px;font-family:var(--mono);font-size:13px;color:var(--ink);background:transparent;outline:none}
+
+.modal-divider{height:1px;background:var(--border);margin:16px 0}
+
+/* tx preview */
+.tx-preview{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:16px}
+.tp-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:12px;border-bottom:1px solid var(--border)}
+.tp-row:last-child{border-bottom:none;padding-top:8px;margin-top:2px}
+.tp-row.total{font-weight:600;font-size:13px}
+.tp-l{color:var(--ink3);font-family:var(--mono)}
+.tp-v{color:var(--ink);font-family:var(--mono);text-align:right}
+.tp-v.tl{color:var(--teal);font-weight:700}
+.tp-v.sm{font-size:10px;max-width:200px;word-break:break-all}
+
+/* mm section */
+.mm-section{background:linear-gradient(135deg,#fff8f0,#fff4e6);border:1px solid var(--amber-bg2);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.mm-fox{font-size:1.6rem}
+.mm-text{flex:1}
+.mm-title{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.mm-sub{font-size:11px;color:var(--ink3);font-family:var(--mono)}
+
+.modal-btns{display:grid;grid-template-columns:1fr 2fr;gap:10px}
+.mbtn{padding:11px;border-radius:var(--r);font-family:var(--mono);font-size:12px;font-weight:500;cursor:pointer;transition:.18s;border:none;letter-spacing:.03em}
+.mb-cancel{background:var(--bg3);color:var(--ink3);border:1px solid var(--border)}
+.mb-cancel:hover{color:var(--ink)}
+.mb-confirm{background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px}
+.mb-confirm:hover{background:var(--teal2)}
+
+/* ── RELEASE MODAL ── */
+.release-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-weight:500}
+.rb-pending{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bg2)}
+.rb-released{background:var(--green-bg);color:var(--green);border:1px solid #c3e8d4}
+
+/* ── DONOR HISTORY ── */
+.donor-feed{display:flex;flex-direction:column;gap:10px;max-height:440px;overflow-y:auto}
+.donor-feed::-webkit-scrollbar{width:3px}
+.donor-feed::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.donation-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:grid;grid-template-columns:38px 1fr auto;gap:12px;align-items:center;animation:slideIn .3s ease}
+@keyframes slideIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+.di-avatar{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:var(--mono);flex-shrink:0;background:var(--teal-bg);color:var(--teal)}
+.di-body{}
+.di-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:2px}
+.di-detail{font-size:11px;color:var(--ink3);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.di-right{text-align:right}
+.di-amount{font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--teal)}
+.di-time{font-size:10px;color:var(--ink4);font-family:var(--mono);margin-top:2px}
+
+/* ── GANACHE PANEL ── */
+.g-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.acc-list{border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.acc-item{padding:11px 16px;display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;background:var(--bg2);border-bottom:1px solid var(--border);font-size:12px;cursor:pointer;transition:.15s}
+.acc-item:last-child{border-bottom:none}
+.acc-item:hover{background:var(--teal-bg)}
+.acc-item.active{background:var(--teal-bg);border-left:3px solid var(--teal)}
+.acc-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.acc-item.active .acc-dot{background:var(--teal2)}
+.acc-addr{color:var(--ink3);font-family:var(--mono);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc-bal{font-family:var(--mono);font-weight:500;color:var(--ink);white-space:nowrap;font-size:11px}
+.acc-role-tag{padding:2px 8px;border-radius:100px;font-size:9px;font-family:var(--mono);border:1px solid;white-space:nowrap}
+.ar-admin{background:var(--teal-bg);color:var(--teal);border-color:var(--teal-bg2)}
+.ar-donor{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-bg2)}
+.ar-obs{background:var(--bg3);color:var(--ink4);border-color:var(--border)}
+
+.block-feed{display:flex;flex-direction:column;gap:8px;max-height:380px;overflow-y:auto}
+.block-feed::-webkit-scrollbar{width:3px}
+.block-feed::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.block-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px;display:grid;grid-template-columns:60px 1fr;gap:12px;animation:slideIn .3s ease}
+.bnum{background:var(--teal-bg);border:1px solid var(--teal-bg2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;gap:2px}
+.bnum-n{font-family:var(--serif);font-size:1.2rem;font-weight:700;color:var(--teal);line-height:1}
+.bnum-l{font-size:9px;color:var(--ink3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em}
+.bdetails{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px}
+.bf{font-size:10px;font-family:var(--mono);line-height:1.8}
+.bf .l{color:var(--ink3)}.bf .v{color:var(--ink)}
+.ev-tag{display:inline-block;padding:2px 8px;border-radius:100px;font-size:9px;font-weight:500;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em}
+.ev-don{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-bg2)}
+.ev-adm{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bg2)}
+.ev-sys{background:var(--green-bg);color:var(--green);border:1px solid #c3e8d4}
+
+/* ── ADMIN PANEL ── */
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono)}
+input,textarea,select{width:100%;padding:10px 13px;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);color:var(--ink);font-family:var(--mono);font-size:13px;outline:none;transition:.18s}
+input:focus,textarea:focus{border-color:var(--teal2);background:var(--bg2)}
+textarea{resize:vertical;min-height:64px;line-height:1.6}
+select{cursor:pointer}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 22px;border-radius:var(--r);font-family:var(--mono);font-size:12px;font-weight:500;cursor:pointer;transition:.18s;border:none;letter-spacing:.03em}
+.btn-p{background:var(--teal);color:#fff}.btn-p:hover{background:var(--teal2)}
+.btn-a{background:var(--amber2);color:#fff;border-color:var(--amber2)}.btn-a:hover{filter:brightness(1.05)}
+.btn-d{background:var(--red-bg);border:1px solid #f5c6c0;color:var(--red)}.btn-d:hover{background:#fde8e5}
+.btn-g{background:var(--bg3);border:1px solid var(--border2);color:var(--ink2)}.btn-g:hover{border-color:var(--teal2);color:var(--teal)}
+.btn-sm{padding:7px 14px;font-size:11px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* causes management table */
+.cause-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono)}
+.cause-table th{text-align:left;padding:8px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);border-bottom:2px solid var(--border);font-weight:500}
+.cause-table td{padding:12px;border-bottom:1px solid var(--border);color:var(--ink2);vertical-align:middle}
+.cause-table tr:last-child td{border-bottom:none}
+.cause-table tr:hover td{background:var(--teal-bg)}
+.tbl-name{font-weight:500;color:var(--ink);font-family:var(--sans);font-size:13px}
+.tbl-amt{font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--teal)}
+
+/* info box */
+.ibox{background:var(--teal-bg);border:1px solid var(--teal-bg2);border-radius:var(--r);padding:12px 16px;font-size:12px;color:var(--teal2);line-height:1.8;font-family:var(--mono);margin-bottom:16px}
+.ibox strong{color:var(--teal)}
+.ibox-warn{background:var(--amber-bg);border-color:var(--amber-bg2);color:var(--amber)}
+
+/* ── AUDIT ── */
+.audit-feed{display:flex;flex-direction:column;gap:8px;max-height:480px;overflow-y:auto}
+.audit-feed::-webkit-scrollbar{width:3px}
+.audit-feed::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.audit-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:start;animation:slideIn .3s ease}
+.aicon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ai-don{background:var(--teal-bg)}
+.ai-adm{background:var(--amber-bg)}
+.ai-sys{background:var(--green-bg)}
+.atitle{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:2px}
+.adetail{font-size:11px;color:var(--ink3);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:440px}
+.atime{font-size:10px;color:var(--ink4);font-family:var(--mono);white-space:nowrap}
+.ahash{font-size:9px;color:var(--teal);font-family:var(--mono);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── SPINNER ── */
+.spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .6s linear infinite;flex-shrink:0}
+.spin-teal{border-color:rgba(13,122,106,.2);border-top-color:var(--teal)}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ── TOAST ── */
+#toasts{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:9999}
+.toast{display:flex;align-items:flex-start;gap:10px;padding:13px 16px;border-radius:var(--r);background:var(--ink);color:#fff;font-size:12px;max-width:330px;line-height:1.5;box-shadow:0 8px 28px rgba(26,26,20,.2);animation:toastIn .28s cubic-bezier(.34,1.56,.64,1);font-family:var(--mono)}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.toast.s{background:var(--teal)}.toast.e{background:var(--red)}.toast.w{background:var(--amber2)}
+
+/* divider */
+.divider{height:1px;background:var(--border);margin:16px 0}
+/* gap utils */
+.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
+/* empty */
+.empty{text-align:center;padding:48px 24px;color:var(--ink3);line-height:2;font-family:var(--mono);font-size:13px}
+.empty-icon{font-size:2.5rem;opacity:.35;display:block;margin-bottom:12px}
+
+/* two col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+@media(max-width:720px){
+  .hero{grid-template-columns:1fr}
+  .hero-right{align-items:flex-start}
+  .stats{grid-template-columns:1fr 1fr}
+  .admin-grid,.g-grid,.two-col,.three-col{grid-template-columns:1fr}
+  .causes-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="hdr z1">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+      </div>
+      <div class="logo-text"><em>Charity</em>Chain</div>
+    </div>
+    <div class="hdr-pills">
+      <div class="net-pill"><div class="net-dot"></div>Ganache · localhost:7545</div>
+      <button class="wallet-btn" id="wbtn" onclick="connectWallet()">
+        <div class="wdot" id="wdot"></div>
+        <span id="wlabel">Connect MetaMask</span>
+      </button>
+      <!-- Account Dropdown -->
+      <select id="account-select" style="display:none; margin-left:8px; font-family:var(--mono); font-size:12px; padding:4px 6px; border-radius:6px; border:1px solid var(--border2); background:var(--bg2); color:var(--ink);">
+        <!-- Options will be populated dynamically -->
+      </select>
+    </div>
+  </div>
+</header>
+
+<div class="wrap z1">
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <div class="hero-eyebrow">Blockchain Charity Donation Tracker</div>
+    <h1>Every donation,<br><em>on the chain.</em></h1>
+    <p class="hero-desc">// Transparent. Tamper-proof. Trustless.<br>// Track every ETH donation from wallet to cause.<br>// Built with Solidity + Truffle + MetaMask + Ganache.</p>
+    <div class="tech-tags">
+      <span class="tag hi">Solidity 0.8.19</span>
+      <span class="tag hi">Truffle Suite</span>
+      <span class="tag hi">MetaMask</span>
+      <span class="tag hi">Ganache</span>
+      <span class="tag">ethers.js</span>
+      <span class="tag">Event Logs</span>
+      <span class="tag">Admin Release</span>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-stat-big">
+      <div class="hsb-v" id="hero-total">0.000</div>
+      <div class="hsb-l">ETH raised on-chain</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-l">Total Raised</div><div class="stat-v tl" id="s-raised">0.000 ETH</div><div class="stat-sub">all causes combined</div></div>
+  <div class="stat"><div class="stat-l">Donations</div><div class="stat-v tl" id="s-txns">0</div><div class="stat-sub">on-chain records</div></div>
+  <div class="stat"><div class="stat-l">Active Causes</div><div class="stat-v" id="s-causes">0</div><div class="stat-sub">registered NGOs</div></div>
+  <div class="stat"><div class="stat-l">Funds Released</div><div class="stat-v am" id="s-released">0.000 ETH</div><div class="stat-sub">admin approved</div></div>
+  <div class="stat"><div class="stat-l">Blocks Mined</div><div class="stat-v" id="s-blocks" style="color:var(--ink2)">0</div><div class="stat-sub">Ganache simulation</div></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tb on" onclick="tab('donate',this)">Donate</button>
+  <button class="tb" onclick="tab('history',this)">Donor History</button>
+  <button class="tb" onclick="tab('audit',this)">Audit Trail</button>
+  <button class="tb" onclick="tab('ganache',this)">Ganache Log</button>
+  <button class="tb" onclick="tab('admin',this)">Admin</button>
+</div>
+
+<!-- ── DONATE TAB ── -->
+<div id="panel-donate" class="panel on">
+  <div class="ibox mb16">
+    <strong>How it works:</strong> Select a cause → choose your ETH amount → MetaMask signs the transaction → ETH transfers on-chain → Ganache mines a new block → donation recorded immutably forever.
+  </div>
+  <div id="causes-grid" class="causes-grid">
+    <div class="empty" style="grid-column:1/-1">
+      <span class="empty-icon">💚</span>
+      No causes yet. Admin must add causes first.
+    </div>
+  </div>
+</div>
+
+<!-- ── HISTORY TAB ── -->
+<div id="panel-history" class="panel">
+  <div class="card">
+    <div class="card-hdr">
+      <div>
+        <div class="card-title">Donation History</div>
+        <div class="card-sub" id="hist-sub">All on-chain donation records</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select id="hist-filter" style="width:auto;padding:6px 10px;font-size:11px" onchange="renderHistory()">
+          <option value="all">All causes</option>
+        </select>
+      </div>
+    </div>
+    <div class="card-body">
+      <div id="donor-feed" class="donor-feed">
+        <div class="empty"><span class="empty-icon">📋</span>No donations yet.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── AUDIT TAB ── -->
+<div id="panel-audit" class="panel">
+  <div class="card">
+    <div class="card-hdr">
+      <div>
+        <div class="card-title">On-Chain Audit Trail</div>
+        <div class="card-sub">Smart contract event log — DonationMade, FundsReleased, CauseAdded</div>
+      </div>
+      <span id="audit-ct" style="font-size:11px;color:var(--ink3);font-family:var(--mono)">0 events</span>
+    </div>
+    <div class="card-body">
+      <div id="audit-feed" class="audit-feed">
+        <div class="empty"><span class="empty-icon">🔍</span>No audit events yet.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GANACHE TAB ── -->
+<div id="panel-ganache" class="panel">
+  <div class="g-grid">
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">Ganache Accounts</div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div id="acc-list" class="acc-list" style="border:none"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">Network Info</div></div>
+      <div class="card-body">
+        <div style="font-size:12px;font-family:var(--mono);line-height:2.4;color:var(--ink2)">
+          <div>RPC: <span style="color:var(--teal)">http://127.0.0.1:7545</span></div>
+          <div>Chain ID: <span style="color:var(--ink)">1337</span></div>
+          <div>Network: <span style="color:var(--ink)">Ganache Local</span></div>
+          <div>Block time: <span style="color:var(--ink)">Instant (on tx)</span></div>
+          <div>Current block: <span id="g-block" style="color:var(--teal);font-weight:500">142</span></div>
+          <div>Contract: <span id="g-contract" style="font-size:10px;color:var(--ink)">Not deployed</span></div>
+        </div>
+        <div class="divider"></div>
+        <div style="font-size:11px;color:var(--ink3);font-family:var(--mono);line-height:1.8">
+          💡 Every donate(), addCause(), releaseFunds() call creates a new block. Watch the block number increment after each action.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">Block Feed — Mined Transactions</div>
+      <span id="block-ct" style="font-size:11px;color:var(--ink3);font-family:var(--mono)">0 blocks</span>
+    </div>
+    <div class="card-body">
+      <div id="block-feed" class="block-feed">
+        <div class="empty"><span class="empty-icon">⛓️</span>No blocks yet. Make a donation to see Ganache mining.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADMIN TAB ── -->
+<div id="panel-admin" class="panel">
+  <div id="admin-warn" class="ibox ibox-warn mb16" style="display:none">
+    ⚠️ Admin-only panel. Connect with Account 0 (deployer) to access these controls.
+  </div>
+
+  <!-- Add Cause -->
+  <div class="card mb16">
+    <div class="card-hdr">
+      <div class="card-title">Register New Cause</div>
+      <span class="release-badge rb-pending">Admin Only</span>
+    </div>
+    <div class="card-body">
+      <div class="admin-grid">
+        <div class="form-group"><label>Cause Name</label><input id="f-cname" type="text" placeholder="Clean Water for Rural India"></div>
+        <div class="form-group"><label>NGO / Organisation</label><input id="f-org" type="text" placeholder="WaterAid Foundation"></div>
+        <div class="form-group"><label>Goal (ETH)</label><input id="f-goal" type="number" step="0.1" placeholder="5.0" value="5"></div>
+        <div class="form-group"><label>Emoji Icon</label><input id="f-emoji" type="text" placeholder="💧" maxlength="4" value="💧"></div>
+        <div class="form-group full"><label>Description</label><textarea id="f-desc" placeholder="Describe this cause and how funds will be used..."></textarea></div>
+      </div>
+      <button class="btn btn-p" onclick="addCause()" id="btn-addcause">Register Cause On-Chain</button>
+    </div>
+  </div>
+
+  <!-- Causes Management -->
+  <div class="card mb16">
+    <div class="card-hdr">
+      <div class="card-title">Cause Management — Fund Release</div>
+      <div class="card-sub">Admin can release approved funds to NGO wallets</div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table class="cause-table" id="cause-table">
+        <thead>
+          <tr>
+            <th>Cause</th><th>Raised</th><th>Goal</th><th>Donors</th><th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="cause-tbody">
+          <tr><td colspan="6" class="empty">No causes registered yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Contract Info -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">Contract Info</div></div>
+      <div class="card-body">
+        <div style="font-size:12px;font-family:var(--mono);line-height:2.4;color:var(--ink2)">
+          <div>Address: <span id="ci-addr" style="color:var(--teal);font-size:10px">Not deployed</span></div>
+          <div>Admin: <span id="ci-admin" style="font-size:10px">—</span></div>
+          <div>Network: <span>Ganache Local (1337)</span></div>
+          <div>Language: <span>Solidity ^0.8.19</span></div>
+          <div>Framework: <span>Truffle Suite</span></div>
+        </div>
+        <div class="divider"></div>
+        <button class="btn btn-g btn-sm" onclick="refreshUI()">↻ Refresh</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">Key Events Emitted</div></div>
+      <div class="card-body">
+        <div style="font-size:11px;font-family:var(--mono);line-height:2.6;color:var(--ink2)">
+          <div><span class="ev-tag ev-don">DonationMade</span> — on every donate()</div>
+          <div><span class="ev-tag ev-adm">CauseAdded</span> — on addCause()</div>
+          <div><span class="ev-tag ev-adm">FundsReleased</span> — on releaseFunds()</div>
+          <div><span class="ev-tag ev-sys">CauseCreated</span> — NGO registration</div>
+        </div>
+        <div class="divider"></div>
+        <div style="font-size:11px;color:var(--ink3);font-family:var(--mono)">Each event creates an immutable on-chain record with donor address, amount, cause ID, and timestamp.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- DONATE MODAL -->
+<div id="don-modal" class="modal-bg" style="display:none" onclick="if(event.target===this)closeDonateModal()">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-hdr-l">
+        <div class="cause-icon-sm" id="m-icon">💚</div>
+        <div>
+          <div class="modal-title" id="m-cause-name">Cause Name</div>
+          <div class="modal-sub" id="m-cause-org">Organisation</div>
+        </div>
+      </div>
+      <button class="close-btn" onclick="closeDonateModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="amount-label">Select donation amount</div>
+      <div class="amount-presets">
+        <div class="preset" onclick="setAmt(0.01,this)">0.01 ETH</div>
+        <div class="preset" onclick="setAmt(0.05,this)">0.05 ETH</div>
+        <div class="preset sel" onclick="setAmt(0.1,this)">0.1 ETH</div>
+        <div class="preset" onclick="setAmt(0.5,this)">0.5 ETH</div>
+      </div>
+      <div class="custom-wrap">
+        <span class="custom-prefix">ETH</span>
+        <input class="custom-inp" id="custom-amt" type="number" step="0.001" min="0.001" value="0.1" oninput="onCustomAmt(this.value)">
+      </div>
+
+      <!-- TX Preview -->
+      <div class="tx-preview">
+        <div class="tp-row"><span class="tp-l">Donation</span><span class="tp-v tl" id="tp-amt">0.1 ETH</span></div>
+        <div class="tp-row"><span class="tp-l">Cause ID</span><span class="tp-v" id="tp-cid">#1</span></div>
+        <div class="tp-row"><span class="tp-l">Contract</span><span class="tp-v sm" id="tp-contract">0x5FbDB2315678afecb367f032d93F642f64180aa3</span></div>
+        <div class="tp-row"><span class="tp-l">Function</span><span class="tp-v" style="color:var(--teal)">donate(uint256 causeId)</span></div>
+        <div class="tp-row"><span class="tp-l">Network</span><span class="tp-v">Ganache (Chain 1337)</span></div>
+        <div class="tp-row"><span class="tp-l">Est. Gas</span><span class="tp-v">~68,000 · 0.0001 ETH</span></div>
+        <div class="tp-row total"><span class="tp-l">Total from wallet</span><span class="tp-v tl" id="tp-total">~0.1001 ETH</span></div>
+      </div>
+
+      <!-- MetaMask section -->
+      <div class="mm-section">
+        <div class="mm-fox">🦊</div>
+        <div class="mm-text">
+          <div class="mm-title">MetaMask Signature Request</div>
+          <div class="mm-sub">Sending from: <span id="mm-from">0xAb58...eC9B</span> · Ganache Local</div>
+        </div>
+      </div>
+
+      <div class="modal-btns">
+        <button class="mbtn mb-cancel" onclick="closeDonateModal()">Cancel</button>
+        <button class="mbtn mb-confirm" onclick="confirmDonation()" id="confirm-btn">
+          <span>Confirm in MetaMask</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script>
+// ─── STATE ────────────────────────────────────────────────────────────────────
+
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+let S = {
+  connected: false,
+  currentAcc: null,
+  isAdmin: false,
+  causes: [],        // will be loaded from blockchain
+  donations: [],     // loaded from blockchain
+  auditLog: [],      // loaded from blockchain
+  blocks: [],
+  blockNum: 0,
+  blocksMinced: 0,
+  totalRaised: 0,
+  totalReleased: 0,
+  pendingModal: null,
+  donateAmt: 0.1,
+  ganacheAccounts: [ // real Ganache accounts
+  ]
+};
+
+
+let accounts = []; // All MetaMask accounts
+
+async function connectWallet() {
+    if (!window.ethereum?.isMetaMask) return toast('MetaMask not detected', 'e');
+
+    try {
+        accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        // after accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const sel = document.getElementById('account-select');
+        sel.innerHTML = '';
+        accounts.forEach((a, i) => {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = short(a) + (i === 0 ? ' (Default)' : '');
+            sel.appendChild(opt);
+        });
+
+        // Show the dropdown now that accounts are available
+        sel.style.display = 'inline-block';
+        sel.selectedIndex = 0;
+        if (!accounts.length) return toast('No MetaMask accounts', 'e');
+
+        // pick the first by default
+        await selectAccount(0);
+
+        // listen for account change in MetaMask
+        window.ethereum.on('accountsChanged', (accs) => {
+            accounts = accs;
+            if (accs.length > 0) selectAccount(0);
+        });
+        
+    } catch (err) {
+        toast('Connection failed: ' + err.message, 'e');
+    }
+}
+
+async function selectAccount(idx) {
+    if (!accounts[idx]) return;
+
+    currentAccount = accounts[idx];
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    signer = provider.getSigner(currentAccount);
+
+    // Reconnect contracts with new signer
+    registry = new ethers.Contract(ADDRESSES.registry, REGISTRY_ABI, signer);
+    vault    = new ethers.Contract(ADDRESSES.vault, VAULT_ABI, signer);
+    audit    = new ethers.Contract(ADDRESSES.audit, AUDIT_ABI, signer);
+
+    // Show connected contract
+    document.getElementById('g-contract').textContent =
+        registry.address;
+
+    // ✅ Admin check
+    const adminAddr = await registry.admin();
+    const isAdmin = currentAccount.toLowerCase() === adminAddr.toLowerCase();
+
+    // ✅ Update global state properly
+    S.connected = true;
+    S.currentAcc = currentAccount;
+    S.isAdmin = isAdmin;
+
+    // ✅ Update UI
+    document.getElementById('wlabel').textContent = short(currentAccount);
+    document.getElementById('mm-from').textContent = short(currentAccount);
+    document.getElementById('admin-warn').style.display =
+        isAdmin ? 'none' : 'block';
+
+    // Optional contract info panel
+    const ciAddr = document.getElementById('ci-addr');
+    const ciAdmin = document.getElementById('ci-admin');
+
+    if (ciAddr) ciAddr.textContent = registry.address;
+    if (ciAdmin) ciAdmin.textContent = adminAddr;
+
+    toast(
+        `Using MetaMask account ${short(currentAccount)}${isAdmin ? ' (Admin)' : ''}`,
+        's'
+    );
+
+    await loadAllData();
+
+    console.log("Current Account:", currentAccount);
+    console.log("Registry Admin:", adminAddr);
+
+    const vaultAdmin = await vault.admin();
+    console.log("Vault Admin:", vaultAdmin);
+}
+
+function subscribeToEvents() {
+
+    // Listen to DonationMade events from DonationVault
+    vault.on('DonationMade', (id, donor, causeId, amount, ts) => {
+
+        const amt = parseFloat(
+            ethers.utils.formatEther(amount)
+        ).toFixed(3);
+
+        addAudit(
+            'don',
+            `Donation: ${amt} ETH → Cause #${causeId}`,
+            `From: ${donor}`,
+            '■',
+            null
+        );
+
+        toast(`New donation: ${amt} ETH`, 's');
+    });
+
+    // Listen to FundsReleased events
+    vault.on('FundsReleased', (causeId, ngoWallet, amount) => {
+
+        const amt = parseFloat(
+            ethers.utils.formatEther(amount)
+        ).toFixed(3);
+
+        addAudit(
+            'adm',
+            `Funds released: ${amt} ETH`,
+            `To NGO wallet: ${ngoWallet}`,
+            '■',
+            null
+        );
+    });
+
+    // Listen to AuditLogger badge events (Contract 3)
+    audit.on('BadgeUpgraded', (donor, tier) => {
+
+        const badges = ['None', 'Bronze', 'Silver', 'Gold', 'Diamond'];
+
+        addAudit(
+            'sys',
+            `Donor badge upgraded: ${badges[tier]}`,
+            `Donor: ${donor}`,
+            '■',
+            null
+        );
+    });
+}
+
+// Auto-refresh chain data every 15 seconds
+setInterval(() => {
+    if (vault) loadAllData();
+}, 15000);
+
+function switchAccount(idx) {
+    if (!accounts[idx]) return;
+    selectAccount(idx);
+}
+
+async function addCause() {
+    if (!S.isAdmin) {
+        toast('Admin only', 'e');
+        return;
+    }
+
+    const name = document.getElementById('f-cname').value.trim();
+    const goalEth = parseFloat(document.getElementById('f-goal').value) || 5;
+    const emoji = document.getElementById('f-emoji').value.trim() || '■';
+    const desc = document.getElementById('f-desc').value.trim() || 'Supporting this cause.';
+
+    if (!name) {
+        toast('Cause name required', 'e');
+        return;
+    }
+
+    const btn = document.getElementById('btn-addcause');
+    btn.innerHTML = '<div class="spin"></div> Mining...';
+    btn.disabled = true;
+
+    try {
+        const usedWallets = new Set(
+            S.causes.map(c => c.orgWallet?.toLowerCase())
+        );
+
+        // ✅ always fetch fresh live Ganache accounts from provider
+        const liveAccounts = await provider.listAccounts();
+
+        let ngoWallet = null;
+
+        for (const w of liveAccounts) {
+            if (
+                !usedWallets.has(w.toLowerCase()) &&
+                w.toLowerCase() !== S.currentAcc.toLowerCase()
+            ) {
+                ngoWallet = ethers.utils.getAddress(w);
+                break;
+            }
+        }
+
+        if (!ngoWallet) {
+            toast('No free Ganache wallet available for new NGO', 'e');
+            return;
+        }
+
+        const goalWei = ethers.utils.parseEther(goalEth.toString());
+
+        const tx = await registry.registerAndCreateCause(
+            "Auto NGO",
+            desc,
+            ngoWallet,
+            name,
+            desc,
+            emoji,
+            goalWei
+        );
+
+        const receipt = await tx.wait();
+
+        // ✅ update mined blocks feed
+        mineBlock(
+            receipt,
+            'CauseCreated',
+            `registerAndCreateCause("${name}")`,
+            'adm'
+        );
+
+        // ✅ update frontend audit trail
+        addAudit(
+            'adm',
+            `Cause created: ${name}`,
+            `Block: #${receipt.blockNumber}`,
+            '🆕',
+            receipt.transactionHash
+        );
+
+        toast(`Cause '${name}' deployed on-chain with wallet ${ngoWallet}!`, 's');
+
+        await loadAllData();
+
+    } catch (err) {
+        console.error("FULL ERROR:", err);
+
+        const msg =
+            err?.reason ||
+            err?.error?.message ||
+            err?.data?.message ||
+            err.message;
+
+        toast('Error: ' + msg, 'e');
+    } finally {
+        btn.innerHTML = 'Register Cause On-Chain';
+        btn.disabled = false;
+    }
+}
+
+async function releaseFunds(causeId) {
+    if (!S.isAdmin) {
+        toast('Admin only', 'e');
+        return;
+    }
+
+    try {
+        toast('Releasing funds — MetaMask will open...', 'i');
+
+        const tx = await vault.releaseFunds(causeId, 0);
+
+        toast('Mining release transaction on Ganache...', 'i');
+
+        const receipt = await tx.wait();
+
+        // ✅ mined block feed
+        mineBlock(
+            receipt,
+            'FundsReleased',
+            `releaseFunds(${causeId}, 0)`,
+            'adm'
+        );
+
+        // ✅ frontend audit trail
+        addAudit(
+            'adm',
+            `Funds released for Cause #${causeId}`,
+            `Block: #${receipt.blockNumber} | TX: ${receipt.transactionHash.slice(0, 18)}...`,
+            '💸',
+            receipt.transactionHash
+        );
+
+        toast(`Funds released! Block #${receipt.blockNumber}`, 's');
+
+        await loadAllData();
+
+    } catch (err) {
+        console.error("FULL ERROR:", err);
+
+        const msg =
+            err?.reason ||
+            err?.error?.message ||
+            err?.data?.message ||
+            err.message;
+
+        toast('Error: ' + msg, 'e');
+    }
+}
+// ─── DONATE FLOW ────────────────────────────────────────────────────────────
+let activeCauseId = null;
+
+function openDonateModal(id){
+  if(!S.connected){ toast('Connect MetaMask first','e'); return; }
+  const c = S.causes.find(x => x.id === id);
+  if(!c || !c.active){ toast('This cause is not active','e'); return; }
+  
+  activeCauseId = id;
+  document.getElementById('m-icon').textContent = c.emoji;
+  document.getElementById('m-cause-name').textContent = c.name;
+  document.getElementById('m-cause-org').textContent = c.org;
+  document.getElementById('tp-cid').textContent = '#' + c.id;
+  document.getElementById('mm-from').textContent = short(S.currentAcc);
+
+  setAmt(0.1, document.querySelectorAll('.preset')[2]);
+  document.getElementById('don-modal').style.display='flex';
+}
+
+function closeDonateModal(){
+  document.getElementById('don-modal').style.display='none';
+  activeCauseId = null;
+}
+
+function setAmt(v, el){
+  S.donateAmt = v;
+  document.getElementById('custom-amt').value = v;
+  document.querySelectorAll('.preset').forEach(p => p.classList.remove('sel'));
+  if(el) el.classList.add('sel');
+  updateModalAmt();
+}
+
+function onCustomAmt(v){
+  S.donateAmt = parseFloat(v) || 0;
+  document.querySelectorAll('.preset').forEach(p => p.classList.remove('sel'));
+  updateModalAmt();
+}
+
+function updateModalAmt(){
+  const v = S.donateAmt || 0;
+  document.getElementById('tp-amt').textContent = v.toFixed(3) + ' ETH';
+  document.getElementById('tp-total').textContent = '~' + (v + 0.0001).toFixed(4) + ' ETH';
+}
+
+async function confirmDonation() {
+    if (!activeCauseId || !S.donateAmt || S.donateAmt <= 0) {
+        toast('Invalid amount', 'e');
+        return;
+    }
+
+    const btn = document.getElementById('confirm-btn');
+    btn.innerHTML = '<div class="spin"></div> Waiting for MetaMask...';
+    btn.disabled = true;
+
+    try {
+        const amountWei = ethers.utils.parseEther(S.donateAmt.toString());
+        toast('MetaMask opened — confirm the transaction', 'i');
+
+        // ✅ Single transaction call
+        const tx = await vault.donateAndLog(activeCauseId, { value: amountWei });
+        btn.innerHTML = '<div class="spin"></div> Mining block on Ganache...';
+        toast('Transaction sent — Ganache is mining the block...', 'i');
+
+        const receipt = await tx.wait();
+
+        // Wire receipt into block feed
+        mineBlock(
+          receipt,
+          'DonationMade',
+          `donate(${activeCauseId}) {value: ${S.donateAmt.toFixed(3)} ETH}`,
+          'don'
+        );
+
+        // Add to audit trail with real tx hash
+        addAudit('don',
+          `Donation: ${S.donateAmt.toFixed(3)} ETH → Cause #${activeCauseId}`,
+          `From: ${S.currentAcc} | Block: #${receipt.blockNumber}`,
+          '💚',
+          receipt.transactionHash
+        );
+
+        toast(`Donated! Block #${receipt.blockNumber} mined on Ganache.`, 's');
+        closeDonateModal();
+        await loadAllData();
+
+    } catch (err) {
+        const msg = err?.reason || err?.data?.message || err.message;
+        toast('Transaction failed: ' + msg, 'e');
+    } finally {
+        btn.innerHTML = '<span>Confirm in MetaMask</span>';
+        btn.disabled = false;
+    }
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function refreshUI(){
+  const tr=S.totalRaised;
+  document.getElementById('hero-total').textContent=tr.toFixed(3);
+  document.getElementById('s-raised').textContent=tr.toFixed(3)+' ETH';
+  document.getElementById('s-txns').textContent=S.donations.length;
+  document.getElementById('s-causes').textContent=S.causes.filter(c=>c.active).length;
+  document.getElementById('s-released').textContent=S.totalReleased.toFixed(3)+' ETH';
+  document.getElementById('s-blocks').textContent=S.blocksMinced;
+  document.getElementById('g-block').textContent=S.blockNum;
+  renderCauses();
+  renderHistory();
+  renderCauseTable();
+}
+
+function renderCauses(){
+  const grid=document.getElementById('causes-grid');
+  if(S.causes.length===0){
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1"><span class="empty-icon">💚</span>No causes yet. Admin must add causes first.</div>';
+    return;
+  }
+  grid.innerHTML=S.causes.map(c=>{
+    const pct=Math.min(100,Math.round((c.raised/c.goal)*100));
+    const status=c.raised>=c.goal?'funded':'active';
+    const pills={active:'<span class="status-pill sp-active">Active</span>',funded:'<span class="status-pill sp-funded">Goal Reached</span>',closed:'<span class="status-pill sp-closed">Closed</span>'};
+    return `
+      <div class="cause-card" onclick="openDonateModal(${c.id})">
+        <div class="cause-top">
+          <span class="cause-emoji">${c.emoji}</span>
+          <div class="cause-name">${c.name}</div>
+          <div class="cause-org">${c.org}</div>
+          <div class="cause-desc">${c.desc}</div>
+        </div>
+        <div class="cause-bottom">
+          <div class="cause-progress-label">
+            <div class="cause-raised">${c.raised.toFixed(3)} ETH</div>
+            <div class="cause-goal">goal: ${c.goal} ETH</div>
+          </div>
+          <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+          <div class="cause-meta">
+            <div class="cause-donors">↑ ${c.donors} donor${c.donors!==1?'s':''} · ${pct}% funded</div>
+            ${pills[status]}
+          </div>
+          <div class="donate-row">
+            <button class="donate-btn db-main" onclick="event.stopPropagation();openDonateModal(${c.id})">Donate ETH</button>
+            <button class="donate-btn db-ghost" onclick="event.stopPropagation()">View History</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderHistory(){
+  const filter=document.getElementById('hist-filter').value;
+  let list=S.donations;
+  if(filter!=='all') list=list.filter(d=>d.causeId===parseInt(filter));
+  document.getElementById('hist-sub').textContent=list.length+' donation'+( list.length!==1?'s':'')+' recorded on-chain';
+
+  // update filter options
+  const sel=document.getElementById('hist-filter');
+  const cur=sel.value;
+  sel.innerHTML='<option value="all">All causes</option>'+S.causes.map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+  sel.value=cur;
+
+  const feed=document.getElementById('donor-feed');
+  if(list.length===0){feed.innerHTML='<div class="empty"><span class="empty-icon">📋</span>No donations yet.</div>';return;}
+  feed.innerHTML=list.map(d=>{
+    const initials=d.donor.slice(2,4).toUpperCase();
+    return `
+      <div class="donation-item">
+        <div class="di-avatar">${initials}</div>
+        <div class="di-body">
+          <div class="di-title">${d.causeName}</div>
+          <div class="di-detail">From: ${d.donor} · TX: ${d.tx}</div>
+        </div>
+        <div class="di-right">
+          <div class="di-amount">${d.amt.toFixed(3)} ETH</div>
+          <div class="di-time">${d.time.toLocaleTimeString()}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderCauseTable(){
+  const tbody=document.getElementById('cause-tbody');
+  if(S.causes.length===0){tbody.innerHTML='<tr><td colspan="6" class="empty">No causes registered yet.</td></tr>';return;}
+  tbody.innerHTML=S.causes.map(c=>{
+    const pct=Math.round((c.raised/c.goal)*100);
+    const unreleased=(c.raised-c.released).toFixed(3);
+    return `
+      <tr>
+        <td><div class="tbl-name">${c.emoji} ${c.name}</div><div style="font-size:10px;color:var(--ink3);font-family:var(--mono)">${c.org}</div></td>
+        <td class="tbl-amt">${c.raised.toFixed(3)} ETH</td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--ink3)">${c.goal} ETH (${pct}%)</td>
+        <td style="font-family:var(--mono);font-size:12px">${c.donors}</td>
+        <td>${c.raised>=c.goal?'<span class="release-badge rb-released">Funded</span>':'<span class="release-badge rb-pending">Active</span>'}</td>
+        <td>
+          <button class="btn btn-a btn-sm" onclick="releaseFunds(${c.id})" ${parseFloat(unreleased)<=0?'disabled':''}>
+            Release ${unreleased} ETH
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+async function renderAccounts() {
+    const list = document.getElementById('acc-list');
+    if (!list) return;
+
+    let rows = '';
+
+    for (let i = 0; i < S.ganacheAccounts.length; i++) {
+        const addr = S.ganacheAccounts[i];
+        const isActive = addr.toLowerCase() === (S.currentAcc || '').toLowerCase();
+
+        let role = 'donor';
+
+        if (i === 0) {
+            role = 'admin';
+        } else {
+            const isNgoWallet = S.causes.some(
+                c => c.orgWallet &&
+                     c.orgWallet.toLowerCase() === addr.toLowerCase()
+            );
+
+            if (isNgoWallet) role = 'ngo';
+        }
+
+        let balText = '—';
+
+        try {
+            if (provider) {
+                const b = await provider.getBalance(addr);
+                balText =
+                    parseFloat(ethers.utils.formatEther(b)).toFixed(4) + ' ETH';
+            }
+        } catch (e) {}
+
+        rows += `
+          <div class="acc-item ${isActive ? 'active' : ''}">
+            <div class="acc-dot"></div>
+            <div class="acc-addr" title="${addr}">${addr}</div>
+            <div class="acc-bal">${balText}</div>
+            <div class="acc-role-tag ${
+                role === 'admin'
+                    ? 'ar-admin'
+                    : role === 'ngo'
+                    ? 'ar-obs'
+                    : 'ar-donor'
+            }">${role}</div>
+          </div>`;
+    }
+
+    list.innerHTML = rows;
+}
+
+// ─── BLOCKS & AUDIT ──────────────────────────────────────────────────────────
+// Called with a real ethers.js TransactionReceipt after every .wait()
+function mineBlock(receipt, eventLabel, inputLabel, type) {
+  S.blocksMinced++;
+  S.blockNum = receipt.blockNumber;
+  S.blocks.unshift({
+    num:   receipt.blockNumber,
+    hash:  receipt.blockHash,
+    tx:    receipt.transactionHash,
+    gas:   receipt.gasUsed ? receipt.gasUsed.toNumber() : 0,
+    event: eventLabel,
+    input: inputLabel,
+    type:  type,
+    time:  new Date()
+  });
+  document.getElementById('g-block').textContent = receipt.blockNumber;
+  document.getElementById('block-ct').textContent = S.blocks.length + ' blocks';
+  document.getElementById('s-blocks').textContent = S.blocksMinced;
+  renderBlocks();
+}
+
+function renderBlocks(){
+  const feed=document.getElementById('block-feed');
+  if(S.blocks.length===0){feed.innerHTML='<div class="empty"><span class="empty-icon">⛓️</span>No blocks yet.</div>';return;}
+  feed.innerHTML=S.blocks.map(b=>`
+    <div class="block-item">
+      <div class="bnum">
+        <div class="bnum-l">Block</div>
+        <div class="bnum-n">${b.num}</div>
+      </div>
+      <div class="bdetails">
+        <div class="bf"><span class="l">Event: </span><span class="ev-tag ev-${b.type}">${b.event}</span></div>
+        <div class="bf"><span class="l">Gas used: </span><span class="v">${b.gas.toLocaleString()}</span></div>
+        <div class="bf" style="grid-column:1/-1"><span class="l">Input: </span><span class="v" style="color:var(--teal);font-size:9px">${b.input}</span></div>
+        <div class="bf"><span class="l">TX: </span><span class="v">${b.tx.slice(0,20)}...</span></div>
+        <div class="bf"><span class="l">Hash: </span><span class="v">${b.hash.slice(0,20)}...</span></div>
+        <div class="bf"><span class="l">Time: </span><span class="v">${b.time.toLocaleString()}</span></div>
+      </div>
+    </div>`).join('');
+}
+
+async function loadAllData() {
+
+    // Read stats from DonationVault (Contract 2)
+    const totalR   = await vault.totalRaised();
+    const totalRel = await vault.totalReleased();
+    const donCount = await vault.donationCount();
+    const balance  = await vault.getBalance();
+
+    // Read cause count from CharityRegistry (Contract 1)
+    const causeCount = await registry.causeCount();
+
+    // Get real current block number from Ganache
+    const currentBlock = await provider.getBlockNumber();
+    S.blockNum = currentBlock;
+    document.getElementById('g-block').textContent = currentBlock;
+    document.getElementById('s-blocks').textContent = S.blocksMinced;
+
+    // Update stat cards
+    const fmt = (wei) => parseFloat(ethers.utils.formatEther(wei)).toFixed(3);
+
+    document.getElementById('hero-total').textContent = fmt(totalR);
+    document.getElementById('s-raised').textContent   = fmt(totalR) + ' ETH';
+    document.getElementById('s-txns').textContent     = donCount.toString();
+    document.getElementById('s-released').textContent = fmt(totalRel) + ' ETH';
+
+    S.totalRaised   = parseFloat(fmt(totalR));
+    S.totalReleased = parseFloat(fmt(totalRel));
+
+    // Load all causes from CharityRegistry
+    const n = causeCount.toNumber();
+    document.getElementById('s-causes').textContent = n;
+
+    const causesArr = [];
+
+    for (let i = 1; i <= n; i++) {
+
+        const [id, ngoId, name, emoji, desc, goalWei, active] =
+            await registry.getCause(i);
+
+        const [raised, released, donors] =
+            await vault.getCauseStats(i);
+
+        const [ngoName] =
+            await registry.getNGO(ngoId.toNumber());
+
+        causesArr.push({
+            id: i,
+            name,
+            emoji,
+            desc,
+            active,
+            org: ngoName,
+            goal: parseFloat(ethers.utils.formatEther(goalWei)),
+            raised: parseFloat(ethers.utils.formatEther(raised)),
+            released: parseFloat(ethers.utils.formatEther(released)),
+            donors: donors.toNumber()
+        });
+    }
+
+    S.causes = causesArr;
+    renderCauses();
+    renderCauseTable();
+    renderAccounts();  // ✅ FIX: refresh account list with real balances
+
+    // Load donation history
+    const dc = donCount.toNumber();
+    S.donations = [];
+
+    for (let i = 0; i < dc; i++) {
+
+        const [did, donor, causeId, amount, ts] =
+            await vault.getDonation(i);
+
+        const cause =
+            causesArr.find(c => c.id === causeId.toNumber());
+
+        S.donations.unshift({
+            causeId: causeId.toNumber(),
+            causeName: cause ? cause.name : 'Unknown',
+            causeEmoji: cause ? cause.emoji : '■',
+            donor,
+            amt: parseFloat(ethers.utils.formatEther(amount)),
+            tx: '(on-chain)',
+            time: new Date(ts.toNumber() * 1000)
+        });
+    }
+
+    renderHistory();
+}
+
+function addAudit(type,title,detail,icon,tx){
+  S.auditLog.unshift({type,title,detail,icon,tx,time:new Date()});
+  document.getElementById('audit-ct').textContent=S.auditLog.length+' events';
+  const feed=document.getElementById('audit-feed');
+  feed.innerHTML=S.auditLog.map(e=>`
+    <div class="audit-item">
+      <div class="aicon ai-${e.type}">${e.icon}</div>
+      <div style="min-width:0">
+        <div class="atitle">${e.title}</div>
+        <div class="adetail">${e.detail}</div>
+        ${e.tx?`<div class="ahash">TX: ${e.tx}</div>`:''}
+      </div>
+      <div class="atime">${e.time.toLocaleTimeString()}</div>
+    </div>`).join('');
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function genTx(){return '0x'+[...Array(64)].map(()=>Math.floor(Math.random()*16).toString(16)).join('');}
+function genHash(){return '0x'+[...Array(64)].map(()=>Math.floor(Math.random()*16).toString(16)).join('');}
+function short(a){return a?a.slice(0,6)+'...'+a.slice(-4):'';}
+
+function tab(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('panel-'+name).classList.add('on');
+  if(btn)btn.classList.add('on');
+}
+
+function toast(msg,type=''){
+  const icons={s:'✓',e:'✕',w:'!'};
+  const el=document.createElement('div');
+  el.className='toast '+(type||'');
+  el.textContent=(icons[type]?icons[type]+' ':'')+msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='.3s';},3600);
+  setTimeout(()=>el.remove(),4000);
+}
+
+// ─── BOOT ────────────────────────────────────────────────────────────────────
+// Render empty state on load (no fake seed data — reads from real chain)
+renderCauses();
+renderCauseTable();
+
+// Show placeholder accounts list (will refresh with real balances after connect)
+document.getElementById('acc-list').innerHTML = S.ganacheAccounts.map((addr, i) => `
+  <div class="acc-item">
+    <div class="acc-dot"></div>
+    <div class="acc-addr" title="${addr}">${addr}</div>
+    <div class="acc-bal">— ETH</div>
+    <div class="acc-role-tag ${i === 0 ? 'ar-admin' : 'ar-donor'}">${i === 0 ? 'admin' : 'donor'}</div>
+  </div>`).join('');
+
+// Auto-connect after short delay
+setTimeout(() => {
+  connectWallet();
+  // Pre-fill admin form
+  document.getElementById('f-cname').value = 'School Meals for Orphans';
+  document.getElementById('f-org').value = 'Feed the Future NGO';
+  document.getElementById('f-goal').value = '3';
+  document.getElementById('f-emoji').value = '🍱';
+  document.getElementById('f-desc').value = 'Providing daily nutritious meals for 500 orphaned children across 4 districts in Rajasthan.';
+}, 500);
+</script>
+
+
+<script>
+// ■■ PASTE YOUR DEPLOYED ADDRESSES HERE AFTER truffle migrate ■■■■■■■■■■
+const ADDRESSES = {
+    registry: "0xcA09502Da4D9fA7E8035229AE7Ad4882A9867C33",
+    vault: "0x204Bce92a906f3fDe510c6107e7f1e236F20eCef",
+    audit: "0x76bB014aBe2Fa977cDAf9d4cEc47e4d4Ca27238A"
+};
+
+// ■■ Minimal ABIs (only functions you call from frontend) ■■■■■■■■■■■■■■■■
+const REGISTRY_ABI = [
+     {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "causeId",
+          "type": "uint256"
+        }
+      ],
+      "name": "CauseClosed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "causeId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "ngoId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "goalWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "CauseCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "ngoId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "wallet",
+          "type": "address"
+        }
+      ],
+      "name": "NGORegistered",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "admin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "causeCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "causes",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "ngoId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "emoji",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "goalWei",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "active",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "exists",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "ngoCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "ngos",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "mission",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "wallet",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "verified",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "exists",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_mission",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "_wallet",
+          "type": "address"
+        }
+      ],
+      "name": "registerNGO",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "verifyNGO",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_ngoId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_desc",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_emoji",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_goalWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "createCause",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "closeCause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "getCause",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "getNGO",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "isCauseActive",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_ngoName",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_ngoMission",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "_ngoWallet",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "_causeName",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_causeDesc",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_causeEmoji",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_goalWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "registerAndCreateCause",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+];
+
+const VAULT_ABI = [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_registry",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_audit",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "donor",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "causeId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "DonationMade",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "causeId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "ngoWallet",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "releasedBy",
+          "type": "address"
+        }
+      ],
+      "name": "FundsReleased",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "admin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "audit",
+      "outputs": [
+        {
+          "internalType": "contract AuditLogger",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "causeDonors",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "causeRaised",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "causeReleased",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "donationCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "donations",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "donor",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "causeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "donorTotal",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "registry",
+      "outputs": [
+        {
+          "internalType": "contract CharityRegistry",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "totalRaised",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "totalReleased",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_causeId",
+          "type": "uint256"
+        }
+      ],
+      "name": "donate",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function",
+      "payable": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_causeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "releaseFunds",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "getCauseStats",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "raised",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "released",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "donors",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_idx",
+          "type": "uint256"
+        }
+      ],
+      "name": "getDonation",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "getBalance",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_causeId",
+          "type": "uint256"
+        }
+      ],
+      "name": "donateAndLog",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function",
+      "payable": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_audit",
+          "type": "address"
+        }
+      ],
+      "name": "setAuditLogger",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+];
+
+const AUDIT_ABI = [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_vault",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "action",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "actor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "AuditEntryAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "donor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum AuditLogger.BadgeTier",
+          "name": "newTier",
+          "type": "uint8"
+        }
+      ],
+      "name": "BadgeUpgraded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "donor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "milestone",
+          "type": "string"
+        }
+      ],
+      "name": "MilestoneReached",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "BRONZE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "DIAMOND",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "GOLD",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "SILVER",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "admin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "auditCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "auditLog",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "action",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "actor",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "causeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "dataHash",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "donors",
+      "outputs": [
+        {
+          "internalType": "enum AuditLogger.BadgeTier",
+          "name": "tier",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalGiven",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "donationCount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "firstDonation",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "exists",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "vault",
+      "outputs": [
+        {
+          "internalType": "contract DonationVault",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_donor",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_causeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "_note",
+          "type": "string"
+        }
+      ],
+      "name": "logDonation",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_action",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_causeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "logAction",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_d",
+          "type": "address"
+        }
+      ],
+      "name": "getDonor",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "tier",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "total",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "count",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "first",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_i",
+          "type": "uint256"
+        }
+      ],
+      "name": "getEntry",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_actor",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "_action",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_causeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "logActionInternal",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+];
+
+let provider, signer, registry, vault, audit;
+let currentAccount = null;
+let isAdmin = false;
+
+</script>
+</body>
+</html>
