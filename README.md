@@ -6,4 +6,4 @@ Developed a decentralized charity donation platform using Ethereum smart contrac
 Implementation Video Link :- https://www.loom.com/share/9983ac3099fc40b1bddfa5d75ccc00e2
 
 Made by : Ishjyot Kaur & Suhan Poojary
-          VESIT, Chembur - 400088
+          ; VESIT, Chembur - 400088
